@@ -439,3 +439,19 @@
   :ensure t
   :config
   (add-hook 'terraform-mode-hook #'terraform-format-on-save-mode))
+
+(use-package boon
+  :ensure t
+  :config
+  (require 'boon-qwerty)
+  :init
+  (boon-mode))
+
+(use-package yasnippet
+  :ensure t
+  :config 
+  (use-package yasnippet-snippets
+    :ensure t)
+  (yas-reload-all))
+
+(add-hook 'org-mode-hook 'yas-minor-mode)
