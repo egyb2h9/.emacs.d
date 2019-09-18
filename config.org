@@ -544,16 +544,6 @@ and only invoke it manually when needed.
     :config
     (add-hook 'terraform-mode-hook #'terraform-format-on-save-mode))
 #+END_SRC
-* Boon
-** Install
-#+BEGIN_SRC emacs-lisp
-  (use-package boon
-    :ensure t
-    :config
-    (require 'boon-qwerty)
-    :init
-    (boon-mode))
-#+END_SRC
 * Snippets
 ** Yasnippet
 #+BEGIN_SRC emacs-lisp
