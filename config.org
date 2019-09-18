@@ -27,74 +27,6 @@
 ;;  (use-package htmlize
 ;;    :ensure t)
 #+END_SRC
-* EXWM
-** Use EXWM
-#+BEGIN_SRC emacs-lisp
-  (use-package exwm
-    :ensure t
-    :config
-    (require 'exwm-config)
-    (exwm-config-default))
-#+END_SRC
-#+BEGIN_SRC emacs-lisp
-;;(require 'exwm-systemtray)
-;;(exwm-systemtray-enable)
-#+END_SRC
-#+BEGIN_SRC emacs-lisp
-(global-set-key (kbd "s-k") 'exwm-workspace-delete)
-(global-set-key (kbd "s-w") 'exwm-workspace-swap)
-#+END_SRC
-** EXWM-Edit
-#+BEGIN_SRC emacs-lisp
-(use-package exwm-edit
-  :ensure t
-  :config
-  (defun ag-exwm/on-exwm-edit-compose ()
-    (funcall 'markdown-mode))
-
-  (add-hook 'exwm-edit-compose-hook 'ag-exwm/on-exwm-edit-compose))
-#+END_SRC
-** EXWM Helper Functions
-#+BEGIN_SRC emacs-lisp
-;; https://emacs.stackexchange.com/questions/33326/how-do-i-cut-and-paste-effectively-between-applications-while-using-exwm
-(defun fhd/exwm-input-line-mode ()
-  "Set exwm window to line-mode and show mode line"
-  (call-interactively #'exwm-input-grab-keyboard)
-  (exwm-layout-show-mode-line))
-
-(defun fhd/exwm-input-char-mode ()
-  "Set exwm window to char-mode and hide mode line"
-  (call-interactively #'exwm-input-release-keyboard)
-  (exwm-layout-hide-mode-line))
-
-(defun fhd/exwm-input-toggle-mode ()
-  "Toggle between line- and char-mode"
-  (interactive)
-  (with-current-buffer (window-buffer)
-    (when (eq major-mode 'exwm-mode)
-      (if (equal (second (second mode-line-process)) "line")
-          (fhd/exwm-input-char-mode)
-        (fhd/exwm-input-line-mode)))))
-
-(exwm-input-set-key (kbd "s-i") #'fhd/exwm-input-toggle-mode)
-
-(defun fhd/toggle-exwm-input-line-mode-passthrough ()
-  (interactive)
-  (if exwm-input-line-mode-passthrough
-    (progn
-      (setq exwm-input-line-mode-passthrough nil)
-      (message "App receives all the keys now (with some simulation)"))
-   (progn
-     (setq exwm-input-line-mode-passthrough t)
-     (message "emacs receives all the keys now")))
-  (force-mode-line-update))
-
-(exwm-input-set-key (kbd "s-p") 'fhd/toggle-exwm-input-line-mode-passthrough)
-
-(add-hook 'exwm-manage-finish-hook
-  (lambda () (call-interactively #'exwm-input-release-keyboard)
-     (exwm-layout-hide-mode-line)))
-#+END_SRC
 * Menus
 ** y-or-n
 #+BEGIN_SRC emacs-lisp
@@ -611,4 +543,28 @@ and only invoke it manually when needed.
     :ensure t
     :config
     (add-hook 'terraform-mode-hook #'terraform-format-on-save-mode))
+#+END_SRC
+* Boon
+** Install
+#+BEGIN_SRC emacs-lisp
+  (use-package boon
+    :ensure t
+    :config
+    (require 'boon-qwerty)
+    :init
+    (boon-mode))
+#+END_SRC
+* Snippets
+** Yasnippet
+#+BEGIN_SRC emacs-lisp
+(use-package yasnippet
+  :ensure t
+  :config 
+  (use-package yasnippet-snippets
+    :ensure t)
+  (yas-reload-all))
+#+END_SRC
+*** Hooks
+#+BEGIN_SRC emacs-lisp
+(add-hook 'org-mode-hook 'yas-minor-mode)
 #+END_SRC

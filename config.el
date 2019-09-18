@@ -18,65 +18,6 @@
 ;;  (use-package htmlize
 ;;    :ensure t)
 
-(use-package exwm
-  :ensure t
-  :config
-  (require 'exwm-config)
-  (exwm-config-default))
-
-;;(require 'exwm-systemtray)
-;;(exwm-systemtray-enable)
-
-(global-set-key (kbd "s-k") 'exwm-workspace-delete)
-(global-set-key (kbd "s-w") 'exwm-workspace-swap)
-
-(use-package exwm-edit
-  :ensure t
-  :config
-  (defun ag-exwm/on-exwm-edit-compose ()
-    (funcall 'markdown-mode))
-
-  (add-hook 'exwm-edit-compose-hook 'ag-exwm/on-exwm-edit-compose))
-
-;; https://emacs.stackexchange.com/questions/33326/how-do-i-cut-and-paste-effectively-between-applications-while-using-exwm
-(defun fhd/exwm-input-line-mode ()
-  "Set exwm window to line-mode and show mode line"
-  (call-interactively #'exwm-input-grab-keyboard)
-  (exwm-layout-show-mode-line))
-
-(defun fhd/exwm-input-char-mode ()
-  "Set exwm window to char-mode and hide mode line"
-  (call-interactively #'exwm-input-release-keyboard)
-  (exwm-layout-hide-mode-line))
-
-(defun fhd/exwm-input-toggle-mode ()
-  "Toggle between line- and char-mode"
-  (interactive)
-  (with-current-buffer (window-buffer)
-    (when (eq major-mode 'exwm-mode)
-      (if (equal (second (second mode-line-process)) "line")
-          (fhd/exwm-input-char-mode)
-        (fhd/exwm-input-line-mode)))))
-
-(exwm-input-set-key (kbd "s-i") #'fhd/exwm-input-toggle-mode)
-
-(defun fhd/toggle-exwm-input-line-mode-passthrough ()
-  (interactive)
-  (if exwm-input-line-mode-passthrough
-    (progn
-      (setq exwm-input-line-mode-passthrough nil)
-      (message "App receives all the keys now (with some simulation)"))
-   (progn
-     (setq exwm-input-line-mode-passthrough t)
-     (message "emacs receives all the keys now")))
-  (force-mode-line-update))
-
-(exwm-input-set-key (kbd "s-p") 'fhd/toggle-exwm-input-line-mode-passthrough)
-
-(add-hook 'exwm-manage-finish-hook
-  (lambda () (call-interactively #'exwm-input-release-keyboard)
-     (exwm-layout-hide-mode-line)))
-
 (defalias 'yes-or-no-p 'y-or-n-p)
 
 (display-time-mode 1)
@@ -439,3 +380,19 @@
   :ensure t
   :config
   (add-hook 'terraform-mode-hook #'terraform-format-on-save-mode))
+
+(use-package boon
+  :ensure t
+  :config
+  (require 'boon-qwerty)
+  :init
+  (boon-mode))
+
+(use-package yasnippet
+  :ensure t
+  :config 
+  (use-package yasnippet-snippets
+    :ensure t)
+  (yas-reload-all))
+
+(add-hook 'org-mode-hook 'yas-minor-mode)
