@@ -21,10 +21,11 @@
 (setq package-enable-at-startup nil)
 
 (setq package-archives '(("ELPA"  . "http://tromey.com/elpa/")
-			 ("gnu"   . "http://elpa.gnu.org/packages/")
+			 ("gnu"   . "https://elpa.gnu.org/packages/")
 			 ("melpa" . "https://melpa.org/packages/")
 			 ("org" . "https://orgmode.org/elpa/")))
 
+(setq gnutls-algorithm-priority "NORMAL:-VERS-TLS1.2")
 (package-initialize)
 
 (unless (package-installed-p 'use-package)
@@ -75,9 +76,10 @@
  '(nrepl-message-colors
    (quote
     ("#CC9393" "#DFAF8F" "#F0DFAF" "#7F9F7F" "#BFEBBF" "#93E0E3" "#94BFF3" "#DC8CC3")))
+ '(org-agenda-files (quote ("~/.emacs.d/config.org")))
  '(package-selected-packages
    (quote
-    (yasnippet-snippets yasnippet boon boon-qwerty org-re-reveal-ref company-terraform terraform-mode ox-reveal exwm-edit try bash-completion elisp-slime-nav elisp-slime-nav-mode pretty-mode expand-region mark-multiple swiper emms popup-kill-ring exwm symon Symon dmenu diminish spaceline company dashboard rainbow-delimiters sudo-edit hungry-delete switch-window rainbow-mode avy smex ido-vertical-mode org-bullets beacon snazzy-theme spacemacs-theme zenburn-theme which-key use-package)))
+    (magit company-shell flycheck projectile company-anaconda anaconda-mode rainbow-identifiers yasnippet-snippets yasnippet boon boon-qwerty org-re-reveal-ref company-terraform terraform-mode ox-reveal exwm-edit try bash-completion elisp-slime-nav elisp-slime-nav-mode pretty-mode expand-region mark-multiple swiper emms popup-kill-ring exwm symon Symon dmenu diminish spaceline company dashboard rainbow-delimiters sudo-edit hungry-delete switch-window rainbow-mode avy smex ido-vertical-mode org-bullets beacon snazzy-theme spacemacs-theme zenburn-theme which-key use-package)))
  '(pdf-view-midnight-colors (quote ("#b2b2b2" . "#292b2e")))
  '(vc-annotate-background "#2B2B2B")
  '(vc-annotate-color-map

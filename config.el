@@ -45,14 +45,13 @@
     :config
     (global-pretty-mode t)))
 
-(use-package rainbow-mode
+(use-package rainbow-identifiers
   :ensure t
-  :init (add-hook 'prog-mode-hook 'rainbow-mode))
+  :init (add-hook 'prog-mode-hook 'rainbow-identifiers-mode))
 
 (use-package rainbow-delimiters
   :ensure t
-  :init
-  (rainbow-delimiters-mode))
+  :init (add-hook 'prog-mode-hook 'rainbow-delimiters-mode))
 
 (line-number-mode 1)
 (column-number-mode 1)
@@ -83,6 +82,10 @@
           (lambda ()
             (define-key shell-mode-map
               (kbd "C-d") 'comint-delchar-or-eof-or-kill-buffer)))
+
+(use-package async
+  :ensure t
+  :init (dired-async-mode 1))
 
 (setq backup-directory-alist
       `(("." . ,(expand-file-name
@@ -136,22 +139,41 @@
 
 (global-set-key (kbd "<s-return>") 'ansi-term)
 
-(setq ido-enable-flex-matching nil)
-(setq ido-create-new-buffer 'always)
-(setq ido-everywhere t)
-(ido-mode 1)
-
-(use-package ido-vertical-mode
+(use-package helm
   :ensure t
-  :init
-  (ido-vertical-mode 1))
-(setq ido-vertical-define-keys 'C-n-and-C-p-only)
-
-(use-package smex
-  :ensure t
-  :init (smex-initialize)
   :bind
-  ("M-x" . smex))
+  ("C-x C-f" . 'helm-find-files)
+  ("C-x C-b" . 'helm-buffers-list)
+  ("M-x" . 'helm-M-x)
+  :config
+  (defun daedreth/helm-hide-minibuffer ()
+    (when (with-helm-buffer helm-echo-input-in-header-line)
+      (let ((ov (make-overlay (point-min) (point-max) nil nil t)))
+        (overlay-put ov 'window (selected-window))
+        (overlay-put ov 'face
+                     (let ((bg-color (face-background 'default nil)))
+                       `(:background ,bg-color :foreground ,bg-color)))
+        (setq-local cursor-type nil))))
+  (add-hook 'helm-minibuffer-set-up-hook 'daedreth/helm-hide-minibuffer)
+  (setq helm-autoresize-max-height 0
+        helm-autoresize-min-height 40
+        helm-M-x-fuzzy-match t
+        helm-buffers-fuzzy-matching t
+        helm-recentf-fuzzy-match t
+        helm-semantic-fuzzy-match t
+        helm-imenu-fuzzy-match t
+        helm-split-window-in-side-p nil
+        helm-move-to-line-cycle-in-source nil
+        helm-ff-search-library-in-sexp t
+        helm-scroll-amount 8 
+        helm-echo-input-in-header-line t)
+  :init
+  (helm-mode 1))
+
+(require 'helm-config)    
+(helm-autoresize-mode 1)
+(define-key helm-find-files-map (kbd "C-b") 'helm-find-files-up-one-level)
+(define-key helm-find-files-map (kbd "C-f") 'helm-execute-persistent-action)
 
 (global-set-key (kbd "C-x C-b") 'ido-switch-buffer)
 
@@ -203,11 +225,13 @@
 			    ))
 (electric-pair-mode t)
 
-(defun kill-whole-word()
+(defun daedreth/kill-inner-word ()
+  "Kills the entire word your cursor is in. Equivalent to 'ciw' in vim."
   (interactive)
+  (forward-char 1)
   (backward-word)
   (kill-word 1))
-(global-set-key (kbd "C-c C-w") 'kill-whole-word)
+(global-set-key (kbd "C-c w k") 'daedreth/kill-inner-word)
 
 (use-package hungry-delete
   :ensure t
@@ -225,7 +249,9 @@
      (buffer-substring
       (point-at-bol)
       (point-at-eol)))))
-(global-set-key (kbd "C-c C-y") 'copy-whole-line)
+(global-set-key (kbd "C-c l c") 'copy-whole-line)
+
+(global-set-key (kbd "C-c l k") 'kill-whole-line)
 
 (defun kill-all-buffers ()
   (interactive)
@@ -264,14 +290,20 @@
 (global-set-key (kbd "<C-return>") 'open-line-below)
 (global-set-key (kbd "<C-S-return>") 'open-line-above)
 
+(use-package projectile
+  :ensure t
+  :init
+    (projectile-mode 1))
+
+(global-set-key (kbd "<f5>") 'projectile-compile-project)
+
 (setq ring-bell-function 'ignore)
 
-;;  (use-package dashboard
-;;    :ensure t
-;;    :config
-;;    (dashboard-setup-startup-hook)
-;;    (setq dashboard-items '(recents . 10))
-;;    (setq dashboard-banner-logo-title "egyb2h9"))
+(setq locale-coding-system 'utf-8)
+(set-terminal-coding-system 'utf-8)
+(set-keyboard-coding-system 'utf-8)
+(set-selection-coding-system 'utf-8)
+(prefer-coding-system 'utf-8)
 
 (defun config-visit ()
   (interactive)
@@ -287,20 +319,44 @@
   :ensure  t)
 
 (use-package company
-  :ensure t
-  :init
-  (add-hook 'after-init-hook 'global-company-mode))
+  :diminish
+  :config
+    (setq company-dabbrev-other-buffers t
+          company-dabbrev-code-other-buffers t
+
+          ;; Allow (lengthy) numbers to be eligible for completion.
+          company-complete-number t
+
+          ;; M-⟪num⟫ to select an option according to its number.
+          company-show-numbers t
+
+          ;; Only 2 letters required for completion to activate.
+          company-minimum-prefix-length 2
+
+          ;; Do not downcase completions by default.
+          company-dabbrev-downcase nil
+
+          ;; Even if I write something with the ‘wrong’ case,
+          ;; provide the ‘correct’ casing.
+          company-dabbrev-ignore-case t
+
+          ;; Immediately activate completion.
+          company-idle-delay 0
+          )
+
+    (global-company-mode 1)
+)
+
+(use-package company-quickhelp
+ :config
+   (setq company-quickhelp-delay 0.1)
+   (company-quickhelp-mode)
+)
 
 (use-package company-terraform
   :ensure t
   :init
   (company-terraform-init))
-
-(use-package bash-completion
-:ensure t
-:init
-(add-hook 'shell-dynamic-complete-functions
-	'bash-completion-dynamic-complete))
 
 (use-package spaceline
   :ensure t
@@ -317,7 +373,8 @@
   (diminish 'which-key-mode)
   (diminish 'subword-mode)
   (diminish 'elisp-slime-nav-mode)
-  (diminish 'rainbow-mode))
+  (diminish 'rainbow-identifiers-mode)
+  (diminish 'rainbow-delimiters-mode))
 
 (use-package dmenu
   :ensure t
@@ -329,64 +386,48 @@
   :bind
   ("M-C-s-m" . symon-mode))
 
-(use-package emms
-  :ensure t
-  :config
-    (require 'emms-setup)
-    (require 'emms-player-mpd)
-    (emms-all) ; don't change this to values you see on stackoverflow questions if you expect emms to work
-    (setq emms-seek-seconds 5)
-    (setq emms-player-list '(emms-player-mpd))
-    (setq emms-info-functions '(emms-info-mpd))
-    (setq emms-player-mpd-server-name "localhost")
-    (setq emms-player-mpd-server-port "6601")
-  :bind
-    ("s-m p" . emms)
-    ("s-m b" . emms-smart-browse)
-    ("s-m r" . emms-player-mpd-update-all-reset-cache)
-    ("<XF86AudioPrev>" . emms-previous)
-    ("<XF86AudioNext>" . emms-next)
-    ("<XF86AudioPlay>" . emms-pause)
-    ("<XF86AudioStop>" . emms-stop))
-
-(setq mpc-host "localhost:6601")
-
-(defun mpd/start-music-daemon ()
-  "Start MPD, connects to it and syncs the metadata cache."
-  (interactive)
-  (shell-command "mpd")
-  (mpd/update-database)
-  (emms-player-mpd-connect)
-  (emms-cache-set-from-mpd-all)
-  (message "MPD Started!"))
-(global-set-key (kbd "s-m c") 'mpd/start-music-daemon)
-
-(defun mpd/kill-music-daemon ()
-  "Stops playback and kill the music daemon."
-  (interactive)
-  (emms-stop)
-  (call-process "killall" nil nil nil "mpd")
-  (message "MPD Killed!"))
-(global-set-key (kbd "s-m k") 'mpd/kill-music-daemon)
-
-(defun mpd/update-database ()
-  "Updates the MPD database synchronously."
-  (interactive)
-  (call-process "mpc" nil nil nil "update")
-  (message "MPD Database Updated!"))
-(global-set-key (kbd "s-m u") 'mpd/update-database)
+(use-package flycheck
+  :ensure t)
 
 (use-package terraform-mode
   :ensure t
   :config
   (add-hook 'terraform-mode-hook #'terraform-format-on-save-mode))
 
-(use-package boon
+(add-hook 'shell-mode-hook 'yas-minor-mode)
+(add-hook 'shell-mode-hook 'flycheck-mode)
+(add-hook 'shell-mode-hook 'company-mode)
+
+(defun shell-mode-company-init ()
+  (setq-local company-backends '((company-shell
+                                  company-shell-env
+                                  company-etags
+                                  company-dabbrev-code))))
+
+(use-package company-shell
   :ensure t
   :config
-  (require 'boon-qwerty)
-  :init
-  (boon-mode))
+    (require 'company)
+    (add-hook 'shell-mode-hook 'shell-mode-company-init))
+
+(use-package anaconda-mode
+  :ensure t
+  :config
+  (add-hook 'python-mode-hook 'anaconda-mode))
+
+(use-package company-anaconda
+  :ensure t
+  :config
+  (eval-after-load "company"
+   '(add-to-list 'company-backends 'company-anaconda)))
+
+(use-package magit
+  :ensure t
+  :config
+  (setq magit-push-always-verify nil)
+  (setq git-commit-summary-max-length 50)
+  :bind
+  ("M-g" . magit-status))
 
 (use-package yasnippet
   :ensure t
